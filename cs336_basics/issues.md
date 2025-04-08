@@ -1,0 +1,7 @@
+- The encoder is very slow.  Probably I can improve the speed significantly
+- Can we use einops in the Linear module instead?
+- How should I initialize the learnable gains?
+- I don't understand how to make the swiglu load from the state dictionary
+- The dimension of the attention heads is non-dynamic at this point
+- Need to optimize the transformer with rope so that it involves only a single matrix multiply
+- I am not actually setting the datatypes (for instance in the embedding function)
