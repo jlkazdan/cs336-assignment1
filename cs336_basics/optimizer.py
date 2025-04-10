@@ -45,7 +45,7 @@ class AdamW(torch.optim.Optimizer):
                 state['m'] = self.beta1*state['m'] + (1-self.beta1)*grad
                 state['v'] = self.beta2*state['v'] + (1-self.beta2)*grad**2
                 alpha_t = lr * np.sqrt(1-self.beta2 ** t)/(1-self.beta1**t)
-                p.data -= alpha_t * state['m']/(np.sqrt(state['v'] + self.eps))
+                p.data -= alpha_t * state['m']/(state['v'] + self.eps)**0.5
                 p.data -= lr*self.lamb*p.data
                 state['t'] += 1
         

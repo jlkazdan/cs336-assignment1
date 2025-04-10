@@ -16,7 +16,7 @@ num_chunks = 1000
 
 def main():
     tokenizer = Tokenizer.from_files(tokenizer_path)
-    for ele in [tinystories_train]:
+    for ele in [tinystories_valid]:
         start = time.time()
         
         # Open in binary mode to find chunk boundaries

@@ -12,7 +12,7 @@ class llm_train_config:
     total_tokens_processed: int = field(default=50000)  # this should be set much higher for actual training
     training_data: str = field(default='data/tokenized_data/TinyStoriesV2-GPT4-train.bin')
     validation_data: str = field(default='data/tokenized_data/TinyStoriesV2-GPT4-valid.bin')
-    device: str = field(default='cpu')  # change this after moving to the server
+    device: str = field(default='cuda:0')  # change this after moving to the server
     batch_size: int = 32  # Note: this one doesn't use field()
     # optimizer params
     steps: int = field(default=1000)

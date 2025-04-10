@@ -168,7 +168,7 @@ class multihead_self_attention(nn.Module):
         
 
         T= input.shape[1]
-        mask = torch.triu(torch.ones(T, T).bool(), diagonal = 1).logical_not()
+        mask = torch.triu(torch.ones(T, T).bool(), diagonal = 1).logical_not().to(q.device)
         attention = scaled_dot_product_attention(q, k, v, mask = mask)
         attention = attention.transpose(1,2)
         attention = attention.contiguous().view(input.shape)

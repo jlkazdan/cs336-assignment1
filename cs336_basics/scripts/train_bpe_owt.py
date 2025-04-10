@@ -11,7 +11,7 @@ def main():
     profile = cProfile.Profile()
     profile.enable()
     tokenizer = BPETokenizer(vocab_size, special_tokens)
-    vocab, merges = tokenizer.train_bpe(path, workers = 1, num_chunks=1000)
+    vocab, merges = tokenizer.train_bpe(path, workers = 8, num_chunks=1000)
     save_tokenizer_details(save_path, vocab, merges)
     tokens = [vocab[key] for key in vocab]
     print(f'the longest token is {max(tokens, key=len)}')
