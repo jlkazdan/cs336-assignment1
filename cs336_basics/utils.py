@@ -1,8 +1,57 @@
 import torch
 import json
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, BinaryIO
 from functools import lru_cache
 PAT = r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
+import os 
+
+def find_chunk_boundaries(
+    file: BinaryIO, 
+    desired_num_chunks: int, 
+    split_special_token: bytes
+) -> list[int]:
+    """
+    Chunk the file into parts that can be counted independently.
+    May return fewer chunks if the boundaries end up overlapping.
+    """
+    assert isinstance(split_special_token, bytes), (
+        "Must represent special token as a bytestring"
+    )
+
+    # Get total file size in bytes
+    file.seek(0, os.SEEK_END)
+    file_size = file.tell()
+    file.seek(0)
+
+    chunk_size = file_size // desired_num_chunks
+
+    # Initial guesses for chunk boundary locations, uniformly spaced
+    # Chunks start on previous index, don't include last index
+    chunk_boundaries = [i * chunk_size for i in range(desired_num_chunks + 1)]
+    chunk_boundaries[-1] = file_size
+
+    mini_chunk_size = 4096  # Read ahead by 4k bytes at a time
+
+    for bi in range(1, len(chunk_boundaries) - 1):
+        initial_position = chunk_boundaries[bi]
+        file.seek(initial_position)  # Start at boundary guess
+        while True:
+            mini_chunk = file.read(mini_chunk_size)  # Read a mini chunk
+
+            # If EOF, this boundary should be at the end of the file
+            if mini_chunk == b"":
+                chunk_boundaries[bi] = file_size
+                break
+
+            # Find the special token in the mini chunk
+            found_at = mini_chunk.find(split_special_token)
+            if found_at != -1:
+                chunk_boundaries[bi] = initial_position + found_at
+                break
+            initial_position += mini_chunk_size
+
+    # Make sure all boundaries are unique, but might be fewer than desired_num_chunks
+    return sorted(set(chunk_boundaries))
 
 #this function was borrowed from gpt2's repo in order to convert from otherwise unsaveable bytes to unicode
 @lru_cache()
@@ -36,6 +85,24 @@ def save_tokenizer_details(path: str, vocab: Dict[int, bytes], merges:List[Tuple
         json.dump(data, file, ensure_ascii=False)
 
     print(f'Saved to {path}')
+
+
+
+def load_tokenizer_details(path: str):
+    b2u = bytes_to_unicode()
+    u2b = {b2u[value]: value for value in b2u}
+    with open(path) as f:
+        data = json.load(f)
+    
+    vocab_raw = data['vocab']
+    merges_raw = data['merges']
+
+    def unicode_to_bytes(unicode_string):
+        return bytes(u2b[char] for char in unicode_string)
+    
+    vocab = {num: unicode_to_bytes(vocab_raw[num]) for num in vocab_raw}
+    merges = [(unicode_to_bytes(ele[0]), unicode_to_bytes(ele[1])) for ele in merges_raw]
+    return vocab, merges
     
 
 
@@ -67,11 +134,9 @@ def is_subsequence(smaller, larger):
     return False
 
 def update_counts(pre_token_freqs, token_freqs, pair, idx):
-    pre_tokens = list(pre_token_freqs.keys())
+    first_elem, second_elem = pair
+    pre_tokens = [pt for pt in pre_token_freqs.keys() if first_elem in pt and second_elem in pt]
     for pre_token in pre_tokens:
-        if not is_subsequence(pair, pre_token):
-            pass
-        else:
             count = pre_token_freqs[pre_token]
 
             new_pre_token = []

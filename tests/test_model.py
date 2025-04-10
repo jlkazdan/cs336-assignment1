@@ -142,6 +142,8 @@ def test_transformer_lm(
     # expected_output = torch.load(FIXTURES_PATH / "transformer_lm_expected_output.pt")
     state_dict, _ = ts_state_dict
 
+    print(f'the ts state dict keys are {state_dict.keys()}')
+
     actual_output = run_transformer_lm(
         vocab_size=vocab_size,
         context_length=n_keys,
@@ -159,6 +161,7 @@ def test_transformer_lm(
         atol=1e-4,
         rtol=1e-2
     )
+    
 
 
 def test_transformer_lm_truncated_input(
