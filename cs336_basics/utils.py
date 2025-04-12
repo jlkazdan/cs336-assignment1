@@ -53,6 +53,54 @@ def find_chunk_boundaries(
     # Make sure all boundaries are unique, but might be fewer than desired_num_chunks
     return sorted(set(chunk_boundaries))
 
+def update_counts_numeric(pre_token_freqs, token_freqs, pair, idx, pair_to_pretokens):
+    first_elem, second_elem = pair
+    pre_tokens = list(pair_to_pretokens[pair])
+    #pre_tokens = [pt for pt in pre_token_freqs.keys() if first_elem in pt and second_elem in pt]
+    for pre_token in pre_tokens:
+            count = pre_token_freqs[pre_token]
+
+            new_pre_token = []
+            
+            i = 0
+            while i < len(pre_token):
+                if i < len(pre_token) - 1 and pre_token[i] == pair[0] and pre_token[i+1] == pair[1]:
+                    new_pre_token.append(idx)
+                    #update the frequencies
+                    if i > 0:
+                        subtract_pair = (pre_token[i-1], pre_token[i])
+                        add_pair = (pre_token[i-1], idx)
+                        token_freqs[subtract_pair] -= count
+                        token_freqs[add_pair] += count
+                    if i < len(pre_token)-2:
+                        subtract_pair = (pre_token[i+1], pre_token[i+2])
+                        add_pair = (idx, pre_token[i+2])
+                        token_freqs[subtract_pair] -= count
+                        token_freqs[add_pair] += count
+                    i+=2
+                else:
+                    new_pre_token.append(pre_token[i])
+                    i+=1
+            new_pre_token = tuple(new_pre_token)
+            pairs_old = set()
+            pairs_new = set()
+            for i in range(len(pre_token)-1):
+                pairs_old.add((pre_token[i], pre_token[i+1]))
+            for i in range(len(new_pre_token)-1):
+                pairs_new.add((new_pre_token[i], new_pre_token[i+1]))
+
+            for duo in pairs_old:
+                pair_to_pretokens[duo].remove(pre_token)
+
+            for duo in pairs_new:
+                pair_to_pretokens[duo].add(new_pre_token)
+                
+
+
+            del pre_token_freqs[pre_token]
+            pre_token_freqs[new_pre_token] = count 
+    del token_freqs[pair]
+
 #this function was borrowed from gpt2's repo in order to convert from otherwise unsaveable bytes to unicode
 @lru_cache()
 def bytes_to_unicode():

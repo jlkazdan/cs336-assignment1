@@ -27,9 +27,13 @@ class BPETokenizer(nn.Module):
             self.vocab[len(self.vocab)]= token.encode("utf-8")
         
         
-    def pre_tokenize(self, corpus):
+    def pre_tokenize(self, data):
+        corpus, top, bottom = data
+        with open(corpus, 'rb') as f:
+            f.seek(bottom)
+            sub_text = f.read(top-bottom).decode('utf-8')
 
-        pre_tokens = re.findall(PAT, corpus)
+        pre_tokens = re.findall(PAT, sub_text)
         pre_token_freqs = defaultdict(int)
         token_freqs = defaultdict(int)
         for pre_token in pre_tokens:
@@ -51,29 +55,22 @@ class BPETokenizer(nn.Module):
             
             # Process each chunk
             chunks = []
-            for i in range(len(boundaries)-1):
-                f.seek(boundaries[i])
-                sub_text = f.read(boundaries[i+1]-boundaries[i]).decode('utf-8')
-                chunks.append(sub_text)
-            print('got chunks to read')
 
-            end_of_reading = time.time()
-            print(f'finished reading in the file: {end_of_reading - start}')
+            for i in range(len(boundaries)-1):
+                chunks.append((corpus, boundaries[i+1], boundaries[i]))
+            
+            
             #Initialize the vocabulary with the original 256 byte pairs
-            if num_chunks > 1:
                 # with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
                 #     output_tuples = executor.map(self.pre_tokenize, portions)
-
-                with Pool(workers) as p:
-                    output_tuples = p.map(self.pre_tokenize, chunks)
-                for ele in output_tuples:
-                    pre_token_freqs |= ele[0]
-                    token_freqs |= ele[1]
-            else:
-                pre_token_freqs, token_freqs = self.pre_tokenize(chunks[0])
-            end_of_pre_tokenization = time.time()
-
-            print(f'got pre-tokens: {end_of_pre_tokenization - end_of_reading}')
+            output_tuples = [self.pre_tokenize(chunks[0])]
+            # with Pool(workers) as p:
+            #     output_tuples = p.map(self.pre_tokenize, chunks)
+            for ele in output_tuples:
+                pre_token_freqs |= ele[0]
+                token_freqs |= ele[1]
+            end_of_reading = time.time()
+            print(f'got pre-tokens: {end_of_reading- start}')
 
             #compute a list of all of the pre-tokens, which act as sequences for the merges
             # for pre_token in pre_tokens:
@@ -91,7 +88,7 @@ class BPETokenizer(nn.Module):
             self.vocab[idx] = (key[0]+key[1]).encode() #eventually we will need to change this
             update_counts(pre_token_freqs, token_freqs, key, idx)
         final = time.time()
-        print(f'finished training: {final - end_of_pre_tokenization}')
+        print(f'finished training: {final - end_of_reading}')
         return self.vocab, merge_list
 
 class Tokenizer(nn.Module):
@@ -138,21 +135,53 @@ class Tokenizer(nn.Module):
                 tokens += token_chunk 
         print('tokenization completed')
         return tokens
+
+    def encode_file(self, data, workers = 1):
+        file = data[0]
+        start = data[1]
+        end = data[2]
+        tokens = []
+        with open(file, 'rb') as f:
+            f.seek(start)
+            text = f.read(end-start).decode('utf-8')
+
+        if self.special_tokens:
+            special_regex = "(" + "|".join(re.escape(tok) for tok in self.special_tokens) + ")"
+            chunks = re.split(special_regex, text)
+        else:
+            chunks = [text]
+        
+        
+
+        if workers == 1:
+            for chunk in chunks:
+                tokens += self.encode_chunk(chunk)
+        else:
+            with Pool(workers) as p:
+                token_chunks = p.map(self.encode_chunk, chunks)
+            for token_chunk in token_chunks:
+                tokens += token_chunk 
+        print('tokenization completed')
+        return tokens
         
 
     #decode one chunk of text without any special tokens
-    def encode_chunk(self, text:str):
+    def encode_chunk(self, text):
         # Check if the entire text is already in the vocabulary
         if text.encode("utf-8") in self.vocab_to_index:
             return [self.vocab_to_index[text.encode("utf-8")]]
         
         # Tokenize the text using the pattern
-        pre_tokens = re.findall(PAT, text)
+        pre_tokens = re.finditer(PAT, text)
         
         # Convert each token to bytes
-        for i, pretoken in enumerate(pre_tokens):
-            enc = pretoken.encode()
-            pre_tokens[i] = [enc[i:i+1] for i in range(len(enc))]
+        pre_tokens_l = []
+        i = 0
+        for gr in pre_tokens:
+            enc = gr.group(0).encode('utf8')
+
+            pre_tokens_l.append([enc[i:i+1] for i in range(len(enc))])
+        pre_tokens = pre_tokens_l
         
         encoded = []
         
