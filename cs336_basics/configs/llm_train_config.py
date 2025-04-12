@@ -15,17 +15,17 @@ class llm_train_config:
     device: str = field(default='cuda:0')  # change this after moving to the server
     batch_size: int = 32  # Note: this one doesn't use field()
     # optimizer params
-    steps: int = field(default=1000)
+    steps: int = field(default=40000)
     lr_max: float = field(default=5e-4)
     lr_min: float = field(default=0)
     betas: tuple = field(default=(0.9, 0.999))
     eps: float = field(default=1e-8)
     weight_decay: float = field(default=0.001)
     warmup_steps: int = field(default=50)
-    terminal_steps_start: int = field(default=10000)  # field(0.75*steps)no terminal steps for now
+    terminal_steps_start: int = field(default=1000000000)  # field(0.75*steps)no terminal steps for now
     gradient_norm: float = field(default=1)
     #logging parameters
-    save_every: int = field(default = 200)
+    save_every: int = field(default = 5000)
     validation_every: int = field(default = 50)
     save_location: str = field(default = 'cs336_basics/checkpoints/tiny_stories/')
     #wandb params

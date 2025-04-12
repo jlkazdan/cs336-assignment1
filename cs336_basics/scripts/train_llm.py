@@ -21,6 +21,7 @@ def compute_validation_loss(model, data, config):
     targets = targets.view(-1)
     loss = cross_entropy(logits, targets)
     print(f'valid loss: {loss}')
+    return loss
 
 
     
