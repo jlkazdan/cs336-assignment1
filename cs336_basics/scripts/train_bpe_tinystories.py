@@ -4,7 +4,7 @@ from cs336_basics.train_bpe import BPETrainer
 from cs336_basics.utils import save_tokenizer_details
 import time
 
-path = "data/TinyStoriesV2-GPT4-train.txt"
+path = "/data/TinyStoriesV2-GPT4-train.txt"
 save_path = "cs336_basics/output_tokenizers/TinyStories-train.json"
 vocab_size = 10**4
 special_tokens = ["<|endoftext|>"]

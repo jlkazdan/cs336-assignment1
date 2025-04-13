@@ -8,8 +8,8 @@ import time
 import multiprocessing as mp
 from multiprocessing import Pool
 
-tinystories_train = 'data/TinyStoriesV2-GPT4-train.txt'
-tinystories_valid = 'data/TinyStoriesV2-GPT4-valid.txt'
+tinystories_train = '/data/a1-basics/TinyStoriesV2-GPT4-train.txt'
+tinystories_valid = '/data/a1-basics/TinyStoriesV2-GPT4-valid.txt'
 tokenizer_path = 'cs336_basics/output_tokenizers/TinyStories-train.json'
 workers = 10
 num_chunks = 1000
@@ -49,7 +49,7 @@ def main():
             #     print(end-start)
         tokens = all_tokens
         print(tokens[:10])
-        path = ele.split('/')[1].split(".")[0]
+        path = ele.split('/')[3].split(".")[0]
         to_save = np.memmap(f'data/tokenized_data/{path}.bin', dtype=np.uint16, mode='w+', shape=(len(tokens),))
         to_save[:] = tokens
         to_save.flush()
