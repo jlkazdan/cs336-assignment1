@@ -9,7 +9,7 @@ sweep_config = {
     },
     'parameters': {
         'lr': {
-            'values': [1e-6, 5e-6, 1e-5, 5e-5, 1e-4, 5e-4],
+            'values': [1e-6, 5e-6, 1e-5, 5e-5, 1e-4, 5e-4, 1e-3],
         },
         }
     }

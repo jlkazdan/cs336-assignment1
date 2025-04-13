@@ -80,9 +80,12 @@ def experiment():
     run = wandb.init()
     wandb_config = wandb.config
     lr = wandb_config.lr
+    bs = wandb_config.bs
 
     config = llm_train_config()
     config.lr_max=lr
+    config.batch_size = bs
+    config.steps = int(config.steps*32/config.batch_size)
     config.experiment_name = f'tinystories-sweeps-{lr}'
     print(f'The learning rate is {config.lr_max}')
     #initialize wandb

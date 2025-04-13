@@ -1,5 +1,5 @@
 import wandb
 from cs336_basics.scripts.train_llm import experiment
-sweep_id='rwica1wk'
+sweep_id='9qkzufpp'
 
-wandb.agent(sweep_id, function=experiment, project="cs336-lr-sweep", count=6)
+wandb.agent(sweep_id, function=experiment, project="cs336-bs-sweep", count=6)
