@@ -223,7 +223,7 @@ class transformer_block(nn.Module):
         x = input #self.n1(input)
         x = self.mha(x) + input
         x = self.n1(x)
-        out = self.ff(out)
+        out = self.ff(x)
         out = self.n2(x + out)
         return out
 
