@@ -214,18 +214,17 @@ class transformer_block(nn.Module):
         self.d_ff = d_ff
 
         self.n1 = RMSNorm(d_model)
-        self.mha = multihead_self_attention(d_model, num_heads, rope=True, theta = theta, max_seq_len = max_seq_len)
+        self.mha = multihead_self_attention(d_model, num_heads, rope=False, theta = theta, max_seq_len = max_seq_len)
         self.n2 = RMSNorm(d_model)
         self.ff = SwiGLU(d_model, d_ff)
         #create your own token positions for the block
 
     def forward(self, input):
-        x = input #self.n1(input)
+        x = self.n1(input)
         x = self.mha(x) + input
-        x = self.n1(x)
-        out = self.ff(x)
-        out = self.n2(x + out)
-        return out
+        out = self.n2(x)
+        out = self.ff(out)
+        return x + out
 
     def load_from_dict(self, weights):
         self.n1 = RMSNorm(self.d_model, weights=weights['ln1.weight'])
