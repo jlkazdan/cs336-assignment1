@@ -220,11 +220,12 @@ class transformer_block(nn.Module):
         #create your own token positions for the block
 
     def forward(self, input):
-        x = input#self.n1(input)
+        x = input #self.n1(input)
         x = self.mha(x) + input
-        #out = self.n2(x)
-        out = self.ff(x)
-        return x + out
+        x = self.n1(x)
+        out = self.ff(out)
+        out = self.n2(x + out)
+        return out
 
     def load_from_dict(self, weights):
         self.n1 = RMSNorm(self.d_model, weights=weights['ln1.weight'])
