@@ -8,8 +8,8 @@ import time
 import multiprocessing as mp
 from multiprocessing import Pool
 
-train = 'data/owt_train.txt'
-valid = 'data/owt_valid.txt'
+train = '/data/a1_basics/owt_train.txt'
+valid = '/data/a1_basics/owt_valid.txt'
 tokenizer_path = 'cs336_basics/output_tokenizers/owt-train.json'
 # train = 'data/TinyStoriesV2-GPT4-train.txt'
 # valid = 'data/TinyStoriesV2-GPT4-valid.txt'
