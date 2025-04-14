@@ -82,6 +82,6 @@ def main(src, tokenizer_path):
     # print(decoded)
         
 if __name__ == '__main__':
-    tokenizer_path = 'cs336_basics/output_tokenizers/TinyStories-train.json'
-    src = 'cs336_basics/checkpoints/tiny_stories/checkpoint-35000.pt'
+    tokenizer_path = 'cs336_basics/output_tokenizers/owt-train.json'#TinyStories-train.json'
+    src = 'cs336_basics/checkpoints/owt/-0.001-checkpoint-15000.pt' #'cs336_basics/checkpoints/tiny_stories/checkpoint-35000.pt'
     main(src, tokenizer_path)

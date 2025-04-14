@@ -8,8 +8,8 @@ import time
 import multiprocessing as mp
 from multiprocessing import Pool
 
-train = '/data/a1_basics/owt_train.txt'
-valid = '/data/a1_basics/owt_valid.txt'
+train = '/data/a1-basics/owt_train.txt'
+valid = '/data/a1-basics/owt_valid.txt'
 tokenizer_path = 'cs336_basics/output_tokenizers/owt-train.json'
 # train = 'data/TinyStoriesV2-GPT4-train.txt'
 # valid = 'data/TinyStoriesV2-GPT4-valid.txt'
@@ -20,14 +20,14 @@ num_chunks = 1000
 
 def main():
     tokenizer = Tokenizer.from_files(tokenizer_path)
-    for ele in [train, valid]:
+    for ele in [valid]:
         start = time.time()
         
         # Open in binary mode to find chunk boundaries
         with open(ele, 'rb') as f:
             # Get chunk boundaries using newlines as split token
             boundaries = find_chunk_boundaries(f, num_chunks, b'<|endoftext|>')
-            
+            print('got boundaries') 
             # Process each chunk
             all_tokens = []
             chunks = []
@@ -56,7 +56,10 @@ def main():
             #     print(end-start)
         tokens = all_tokens
         print(tokens[:10])
-        path = ele.split('/')[1].split(".")[0]
+        if 'train' in ele:
+            path = 'owt_train'
+        else:
+            path = 'owt_valid'
         to_save = np.memmap(f'data/tokenized_data/{path}.bin', dtype=np.uint16, mode='w+', shape=(len(tokens),))
         to_save[:] = tokens
         to_save.flush()
