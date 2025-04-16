@@ -15,7 +15,7 @@ class llm_train_config:
     device: str = field(default='cuda:0')  # change this after moving to the server
     batch_size: int = field(default=64)  # Note: this one doesn't use field()
     # optimizer params
-    steps: int = field(default=40000)
+    steps: int = field(default=100000000)
     lr_max: float = field(default=5e-4)
     lr_min: float = field(default=0)
     betas: tuple = field(default=(0.9, 0.999))
